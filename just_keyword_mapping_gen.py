@@ -87,7 +87,7 @@ if __name__ == '__main__':
                                     rows.append(one)
             message = "\n".join(rows)[:1024+512]
             all_texts = [
-                "[Round 0]\n 根据以下几个表格:" + message + " 解决问题：" + question_one['question']
+                "[Round 0]\n 根据以下几个表格:\n" + message + " 解决问题：\n" + question_one['question']
                 + "    \n答：",
             ]
             # print(all_texts)

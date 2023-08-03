@@ -69,7 +69,8 @@ for key_file_one in key_file:
 # form_list = {}
 for form_key, form_value in form_list.items():
     form_list[form_key] = list(set(form_value))
-
+for form_key, form_value in text_list.items():
+    text_list[form_key] = list(set(form_value))
 import json
 
 json.dump(form_list, open("form_list_keywords.json", "w"), ensure_ascii=False)
