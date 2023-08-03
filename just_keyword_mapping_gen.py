@@ -1,4 +1,5 @@
 import json
+import os.path
 
 test_questions = open("test_questions_keyword.jsonl").readlines()
 question_2020 = []
@@ -50,62 +51,46 @@ def re_chinese(a_str):
 
 if __name__ == '__main__':
     tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm2-6b", trust_remote_code=True)
-    # model = AutoModel.from_pretrained("THUDM/chatglm2-6b", trust_remote_code=True, device='cuda')
-    model = AutoModel.from_pretrained("THUDM/chatglm2-6b", trust_remote_code=True)
+    model = AutoModel.from_pretrained("THUDM/chatglm2-6b", trust_remote_code=True, device='cuda')
     # 多显卡支持，使用下面两行代替上面一行，将num_gpus改为你实际的显卡数量
     # from utils import load_model_on_gpus
     # model = load_model_on_gpus("THUDM/chatglm2-6b", num_gpus=2)
     # model = model.eval()
-    from fastllm_pytools import llm
-
-    model = llm.from_hf(model, tokenizer, dtype="float16")
+    # from fastllm_pytools import llm
+    # model = AutoModel.from_pretrained("THUDM/chatglm2-6b", trust_remote_code=True)
+    #
+    # model = llm.from_hf(model, tokenizer, dtype="float16")
     for question_one in question_2020:
         all_texts = []
-        year_prefix = []
-        # question_one = json.loads(question_one)
-        if "2019年" in question_one['question']:
-            year_prefix.append("2019年")
-        if "2020年" in question_one['question']:
-            year_prefix.append("2020年")
-        if "2021年" in question_one['question']:
-            year_prefix.append("2021年")
+        year_prefix = question_one['year']
+        stock_name_list = question_one['stock_name']
+        rows = []
         # jingzhunpipeibiaoge
         if "keyword" in question_one:
             print(question_one)
-            for stock_name_one in stock_name:
-                if stock_name_one in question_one['question']:
-                    if stock_name_one in stock_mapping:
-                        rows = []
-                        for stock_form in stock_mapping[stock_name_one]:
-                            if year_prefix:
-                                for year_prefix_one in year_prefix:
-                                    if year_prefix_one in stock_form:
-                                        # print(question_one)
-                                        for question_one_keyword in question_one['keyword']:
-                                            for one in first_label[stock_form]:
-                                                if question_one_keyword in one:
-                                                    rows.append(one)
-                            else:
-                                for question_one_keyword in question_one['keyword']:
-                                    for one in first_label[stock_form]:
+            for stock_name_one in stock_name_list:
+                if 'match_annoy_name' in question_one:
+                    if len(question_one['match_annoy_name']):
+                        for stock_form in question_one['match_annoy_name']:
+                            stock_form_key = os.path.join("./alltext/alltxt", stock_form)
+                            for question_one_keyword in question_one['keyword']:
+                                if stock_form_key in first_label:
+                                    for one in first_label[stock_form_key]:
                                         if question_one_keyword in one:
                                             rows.append(one)
-
-                            if len(rows) != 0:
-                                rows = list(set(rows))
-                                message = "\n".join(rows)
-                                message = message[:1024]
-                                query = question_one['question']
-                                for year_prefix_one in year_prefix:
-                                    query.replace(year_prefix_one, "")
-                                for stock_name_one in stock_name:
-                                    query.replace(stock_name_one, "")
-
-                                all_texts = [
-                                    "[Round 0]\n 根据以下几个表格:" + message + " 解决问题：" + query
-                                    + "    \n答：",
-                                ]
-                                # print(all_texts)
+                if len(rows) == 0 and 'search_stock_name' in question_one:
+                    stock_form_key = os.path.join("./alltext/alltxt", question_one['search_stock_name'])
+                    for question_one_keyword in question_one['keyword']:
+                        if stock_form_key in first_label:
+                            for one in first_label[stock_form_key]:
+                                if question_one_keyword in one:
+                                    rows.append(one)
+            message = "\n".join(rows)[:1024+512]
+            all_texts = [
+                "[Round 0]\n 根据以下几个表格:" + message + " 解决问题：" + question_one['question']
+                + "    \n答：",
+            ]
+            # print(all_texts)
 
         if len(all_texts) == 0:
             all_texts = [

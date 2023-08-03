@@ -11,6 +11,7 @@ from langchain.vectorstores import FAISS
 embedding_model_name = 'WangZeJun/simbert-base-chinese'
 embeddings = HuggingFaceEmbeddings(model_name=embedding_model_name)
 all_txt_filename = os.listdir("alltext/alltxt")
+key_filename = []
 idx = 0
 docs = []
 for row in all_txt_filename:
@@ -54,10 +55,11 @@ for test_question in test_questions:
                             for year_prefix_one in year_prefix:
                                 if year_prefix_one in row:
                                     test_question["match_annoy_name"].append(row)
-
+                                    key_filename.append(row)
     if len(test_question["match_annoy_name"]) == 0:
         file_form_one = vector_store.similarity_search(test_question['question'])
         test_question["search_stock_name"] = file_form_one[0].page_content
+        key_filename.append(file_form_one[0].page_content)
     d.append(test_question)
     print(json.dumps(test_question,ensure_ascii=False))
 test_questions_keyword = open("test_questions_keyword.jsonl", "w")
@@ -65,3 +67,4 @@ for test_question in d:
     test_questions_keyword.write(json.dumps(test_question, ensure_ascii=False) + "\n")
 keyword_list = list(set(keyword_list))
 json.dump(keyword_list, open("keyword_list.json", "w"), ensure_ascii=False)
+json.dump(key_filename, open("key_filename.json", "w"), ensure_ascii=False)
