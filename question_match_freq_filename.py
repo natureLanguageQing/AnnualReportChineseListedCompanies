@@ -59,7 +59,7 @@ for test_question in test_questions:
         file_form_one = vector_store.similarity_search(test_question['question'])
         test_question["search_stock_name"] = file_form_one[0].page_content
     d.append(test_question)
-    print(test_question)
+    print(json.dumps(test_question,ensure_ascii=False))
 test_questions_keyword = open("test_questions_keyword.jsonl", "w")
 for test_question in d:
     test_questions_keyword.write(json.dumps(test_question, ensure_ascii=False) + "\n")
