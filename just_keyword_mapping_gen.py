@@ -50,6 +50,7 @@ def re_chinese(a_str):
 
 
 if __name__ == '__main__':
+    result = []
     tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm2-6b", trust_remote_code=True)
     model = AutoModel.from_pretrained("THUDM/chatglm2-6b", trust_remote_code=True, device='cuda')
     # 多显卡支持，使用下面两行代替上面一行，将num_gpus改为你实际的显卡数量
@@ -85,7 +86,7 @@ if __name__ == '__main__':
                             for one in first_label[stock_form_key]:
                                 if question_one_keyword in one:
                                     rows.append(one)
-            message = "\n".join(rows)[:1024+512]
+            message = "\n".join(rows)[:1024 + 512]
             all_texts = [
                 "[Round 0]\n 根据以下几个表格:\n" + message + " 解决问题：\n" + question_one['question']
                 + "    \n答：",
@@ -105,7 +106,9 @@ if __name__ == '__main__':
         print(all_texts[0])
         print(response)
         question_one['answer'] = response
-d = []
-for i in question_2020:
-    d.append(json.dumps(i, ensure_ascii=False))
-open("search_form_text_gen_chinese_without_name.py.json", "w").write("\n".join(d))
+        result.append(question_one)
+    d = []
+    for i in result:
+        d.append(json.dumps(i, ensure_ascii=False))
+    print(d)
+    open("search_form_text_gen_chinese_without_name.py.json", "w").write("\n".join(d))
